@@ -38,6 +38,8 @@ public:
 #if WITH_EDITOR
 	// Get or create editor ImGui context proxy.
 	FORCEINLINE FImGuiContextProxy& GetEditorContextProxy() { return *GetEditorContextData().ContextProxy; }
+
+	FORCEINLINE FImGuiContextProxy& GetEditorWindowContextProxy(int32 idx) { return *GetEditorWindowContextData(idx).ContextProxy; }
 #endif
 
 #if !WITH_EDITOR
@@ -95,6 +97,7 @@ private:
 
 #if WITH_EDITOR
 	FContextData& GetEditorContextData();
+	FContextData& GetEditorWindowContextData(int32 idx);
 #endif
 
 #if !WITH_EDITOR

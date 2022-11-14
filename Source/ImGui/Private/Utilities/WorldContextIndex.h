@@ -20,6 +20,8 @@ namespace Utilities
 	// Editor context index. We are lacking flexibility here, so we might need to change it somehow.
 	static constexpr int32 EDITOR_CONTEXT_INDEX = -1;
 
+	static constexpr int32 EDITOR_WINDOW_CONTEXT_INDEX_OFFSET = 100;
+
 	FORCEINLINE int32 GetWorldContextIndex(const FWorldContext& WorldContext)
 	{
 		switch (WorldContext.WorldType)

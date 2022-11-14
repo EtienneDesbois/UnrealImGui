@@ -158,6 +158,18 @@ FImGuiContextManager::FContextData& FImGuiContextManager::GetEditorContextData()
 
 	return *Data;
 }
+FImGuiContextManager::FContextData& FImGuiContextManager::GetEditorWindowContextData(int32 idx)
+{
+	FContextData* Data = Contexts.Find(Utilities::EDITOR_WINDOW_CONTEXT_INDEX_OFFSET + idx);
+
+	if (UNLIKELY(!Data))
+	{
+		Data = &Contexts.Emplace(Utilities::EDITOR_WINDOW_CONTEXT_INDEX_OFFSET + idx, FContextData{ GetEditorContextName(), Utilities::EDITOR_WINDOW_CONTEXT_INDEX_OFFSET + idx, FontAtlas, DPIScale, -1 });
+		OnContextProxyCreated.Broadcast(Utilities::EDITOR_WINDOW_CONTEXT_INDEX_OFFSET + idx, *Data->ContextProxy);
+	}
+
+	return *Data;
+}
 #endif // WITH_EDITOR
 
 #if !WITH_EDITOR

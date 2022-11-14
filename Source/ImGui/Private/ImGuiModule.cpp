@@ -32,6 +32,10 @@ struct EDelegateCategory
 };
 
 FImGuiModuleManager* ImGuiModuleManager = nullptr;
+FImGuiModuleManager* FImGuiModule::GetManager()
+{
+	return ImGuiModuleManager;
+}
 
 #if WITH_EDITOR
 static FImGuiEditor* ImGuiEditor = nullptr;
@@ -62,6 +66,12 @@ FImGuiDelegateHandle FImGuiModule::AddWorldImGuiDelegate(const UWorld* World, co
 FImGuiDelegateHandle FImGuiModule::AddMultiContextImGuiDelegate(const FImGuiDelegate& Delegate)
 {
 	return { FImGuiDelegatesContainer::Get().OnMultiContextDebug().Add(Delegate), EDelegateCategory::MultiContext };
+}
+
+FImGuiDelegateHandle FImGuiModule::AddEditorWindowImGuiDelegate(const FImGuiDelegate& Delegate, int32 index)
+{
+	return { FImGuiDelegatesContainer::Get().OnWorldDebug(Utilities::EDITOR_WINDOW_CONTEXT_INDEX_OFFSET + index).Add(Delegate),
+		EDelegateCategory::Default, Utilities::EDITOR_WINDOW_CONTEXT_INDEX_OFFSET + index };
 }
 
 void FImGuiModule::RemoveImGuiDelegate(const FImGuiDelegateHandle& Handle)

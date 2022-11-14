@@ -8,8 +8,9 @@
 
 #include <Modules/ModuleManager.h>
 
+class FImGuiModuleManager;
 
-class FImGuiModule : public IModuleInterface
+class IMGUI_API FImGuiModule : public IModuleInterface
 {
 public:
 
@@ -34,6 +35,8 @@ public:
 		return FModuleManager::Get().IsModuleLoaded("ImGui");
 	}
 
+	static FImGuiModuleManager* GetManager();
+
 #if IMGUI_WITH_OBSOLETE_DELEGATES
 
 #if WITH_EDITOR
@@ -45,6 +48,8 @@ public:
 	 * @returns Returns handle that can be used to remove delegate (@see RemoveImGuiDelegate)
 	 */
 	virtual FImGuiDelegateHandle AddEditorImGuiDelegate(const FImGuiDelegate& Delegate);
+
+	virtual FImGuiDelegateHandle AddEditorWindowImGuiDelegate(const FImGuiDelegate& Delegate, int32 index);
 #endif
 
 	/**

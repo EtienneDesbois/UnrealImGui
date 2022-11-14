@@ -9,6 +9,13 @@ class IMGUI_API FImGuiModuleProperties
 {
 public:
 
+	bool IsInputEnabledInEditor() const { return bInputEnabledInEditor; }
+
+	void SetInputEnabledInEditor(bool bEnabled)
+	{
+		bInputEnabledInEditor = bEnabled;
+	}
+
 	/** Check whether input is enabled. */
 	bool IsInputEnabled() const { return bInputEnabled; }
 
@@ -84,6 +91,7 @@ public:
 private:
 
 	bool bInputEnabled = false;
+	bool bInputEnabledInEditor = false;
 
 	bool bKeyboardNavigationEnabled = false;
 	bool bGamepadNavigationEnabled = false;

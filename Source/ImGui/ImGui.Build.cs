@@ -42,7 +42,6 @@ public class ImGui : ModuleRules
 
 		PrivateIncludePaths.AddRange(
 			new string[] {
-				"ImGui/Private",
 				"ThirdParty/ImGuiLibrary/Private",
 				"ThirdParty/ImPlotLibrary/Private",
 				// ... add other private include paths required here ...
