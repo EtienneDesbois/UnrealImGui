@@ -15,6 +15,8 @@
 
 #include <Interfaces/IPluginManager.h>
 
+#include "LevelEditor.h"
+
 
 #define LOCTEXT_NAMESPACE "FImGuiModule"
 
@@ -46,12 +48,6 @@ static FImGuiEditor* ImGuiEditor = nullptr;
 #if WITH_EDITOR
 FImGuiDelegateHandle FImGuiModule::AddEditorImGuiDelegate(const FImGuiDelegate& Delegate)
 {
-	static bool IsEditorInit = false;
-	if (!IsEditorInit) {
-		ImGuiModuleManager->AddWidgetToViewport(nullptr);
-		IsEditorInit = true;
-	}
-
 	return { FImGuiDelegatesContainer::Get().OnWorldDebug(Utilities::EDITOR_CONTEXT_INDEX).Add(Delegate),
 		EDelegateCategory::Default, Utilities::EDITOR_CONTEXT_INDEX };
 }
@@ -151,6 +147,66 @@ void FImGuiModule::StartupModule()
 	checkf(!ImGuiEditor, TEXT("Instance of the ImGui Editor already exists. Instance should be created only during module startup."));
 	ImGuiEditor = new FImGuiEditor();
 #endif
+
+
+	FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
+	LevelEditorModule.OnRedrawLevelEditingViewports().AddRaw(this, &FImGuiModule::OnRedrawLevelEditingViewports);
+
+	AddEditorImGuiDelegate(FImGuiDelegate::CreateRaw(this, &FImGuiModule::ImguiTick));
+}
+
+void FImGuiModule::OnRedrawLevelEditingViewports(bool T)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnRedrawLevelEditingViewports %d"), T);
+	InitViewportImgui();
+}
+
+
+void FImGuiModule::InitViewportImgui()
+{
+	if (!IsEditorInit) {
+		FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
+		TSharedPtr<IAssetViewport> ActiveLevelViewport = LevelEditorModule.GetFirstActiveViewport();
+		if (ActiveLevelViewport.IsValid()) {
+			ImGuiModuleManager->GetContextManager().GetEditorContextData();
+			UE_LOG(LogTemp, Warning, TEXT("INIT VIEWPORT"));
+			ImGuiModuleManager->AddWidgetToViewport(nullptr);
+			IsEditorInit = true;
+		}
+	}
+}
+
+// Testing.
+void FImGuiModule::ImguiTick() {
+
+	bool Open = true;
+	ImGui::GetIO().FontGlobalScale = 1.5f;
+	ImGui::Begin("Label", &Open, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar);
+	// ImGui::SliderFloat("Scale", &Scale, 0.1f, 5.0f);
+	// ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+	// ImGui::Text("Height: %.1f", this->GetActorLocation().Z);
+	if (ImGui::Button("ITS AB TUUON")) {
+		UE_LOG(LogTemp, Warning, TEXT("CLICKED"));
+	}
+
+	static float bar_data[11] {0.0,1.0,2.0,3.0,0.0,5.0,4.0,7.0,0.0,6.0,4.0};
+
+	static float count = 0;
+	static float deltas[11] {0.0,1.0,2.0,3.0,0.0,5.0,4.0,7.0,0.0,6.0,4.0};
+
+	if (count == 10) {
+		count = 0;
+		for (int i = 0; i < 11; ++i) {
+			deltas[i] = .5 * deltas[i] + 10.0 * (-.5 + static_cast <float> (rand()) / static_cast <float> (RAND_MAX));
+		}
+	}
+	count++;
+	for (int i = 0; i < 11; ++i) {
+		bar_data[i] += deltas[i] / 60.0;
+	}
+	// ImGui::PlotHistogram("Histogram", bar_data, 11, 0, const char* overlay_text, float scale_min, float scale_max, ImVec2 graph_size, int stride)
+	ImGui::PlotHistogram("", bar_data, IM_ARRAYSIZE(bar_data), 0, NULL, -5.0f, 10.0f, ImVec2(0, 80.0f));
+	ImGui::End();
 }
 
 void FImGuiModule::ShutdownModule()

@@ -12,6 +12,8 @@
 #include "ImGuiModuleProperties.h"
 #include "Input/Reply.h"
 
+#include "ImGuiModule.h"
+
 void SImGuiWidgetEd::Construct(const FArguments& InArgs)
 {
 	//checkf(InArgs._ModuleManager, TEXT("Null Module Manager argument"));

@@ -6,6 +6,8 @@
 #include "ImGuiModuleProperties.h"
 #include "ImGuiTextureHandle.h"
 
+#include "LevelEditor.h"
+
 #include <Modules/ModuleManager.h>
 
 class FImGuiModuleManager;
@@ -181,6 +183,10 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+	void OnRedrawLevelEditingViewports(bool T);
+	void ImguiTick();
+	void InitViewportImgui();
+
 private:
 #if WITH_EDITOR
 	virtual void SetProperties(const FImGuiModuleProperties& Properties);
@@ -188,5 +194,8 @@ private:
 	struct FImGuiDelegatesContainerHandle* DelegatesContainerHandle = nullptr;
 	friend struct FImGuiContextHandle;
 	friend struct FImGuiDelegatesContainerHandle;
+
 #endif
+private:
+	bool IsEditorInit{ false };
 };

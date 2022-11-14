@@ -70,7 +70,7 @@ public:
 
 	void RebuildFontAtlas();
 
-private:
+public:
 
 	struct FContextData
 	{
