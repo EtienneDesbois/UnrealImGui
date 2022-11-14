@@ -12,6 +12,8 @@
 
 class FImGuiModuleManager;
 
+static const FName ImguiTabName("Imgui");
+
 class IMGUI_API FImGuiModule : public IModuleInterface
 {
 public:
@@ -187,6 +189,8 @@ public:
 	void InitViewportImgui( TSharedPtr<SLevelViewport> Viewport);
 	void OnLevelEditorCreated(TSharedPtr<ILevelEditor>);
 
+	static void ToggleInput();
+	void RegisterMenus();
 private:
 #if WITH_EDITOR
 	virtual void SetProperties(const FImGuiModuleProperties& Properties);
@@ -195,6 +199,7 @@ private:
 	friend struct FImGuiContextHandle;
 	friend struct FImGuiDelegatesContainerHandle;
 
+	TSharedPtr<class FUICommandList>					PluginCommands;
 #endif
 private:
 	bool IsEditorInit{ false };

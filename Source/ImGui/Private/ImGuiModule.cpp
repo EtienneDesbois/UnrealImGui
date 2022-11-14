@@ -18,6 +18,11 @@
 #include "LevelEditor.h"
 
 
+#include "ImGuiStyle.h"
+#include "ImGuiCommands.h"
+#include "ToolMenus.h"
+#include "Interfaces/IMainFrameModule.h"
+
 #define LOCTEXT_NAMESPACE "FImGuiModule"
 
 
@@ -133,6 +138,10 @@ void FImGuiModule::StartupModule()
 	// theoretically doesn't support plug-ins and will not load re-compiled module, but its handles will still redirect
 	// to the active one.
 
+	FImGuiStyle::Initialize();
+	FImGuiStyle::ReloadTextures();
+	FImGuiCommands::Register();
+
 #if WITH_EDITOR
 	ImGuiContextHandle = &ImGuiImplementation::GetContextHandle();
 	DelegatesContainerHandle = &FImGuiDelegatesContainer::GetHandle();
@@ -152,8 +161,18 @@ void FImGuiModule::StartupModule()
 	FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
 	LevelEditorModule.OnLevelEditorCreated().AddRaw(this, &FImGuiModule::OnLevelEditorCreated);
 
+	PluginCommands = MakeShareable(new FUICommandList);
+
+	PluginCommands->MapAction(
+		FImGuiCommands::Get().ImGuiToggleInput,
+		FExecuteAction::CreateStatic(&FImGuiModule::ToggleInput),
+		FCanExecuteAction());
+
+	IMainFrameModule& mainFrame = FModuleManager::Get().LoadModuleChecked<IMainFrameModule>("MainFrame");
+	mainFrame.GetMainFrameCommandBindings()->Append(PluginCommands.ToSharedRef());
 
 	AddEditorImGuiDelegate(FImGuiDelegate::CreateRaw(this, &FImGuiModule::ImguiTick));
+	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FImGuiModule::RegisterMenus));
 }
 
 
@@ -212,6 +231,8 @@ void FImGuiModule::ShutdownModule()
 {
 	// In editor store data that we want to move to hot-reloaded module.
 
+	FImGuiStyle::Shutdown();
+	FImGuiCommands::Unregister();
 #if WITH_EDITOR
 	static bool bMoveProperties = true;
 	static FImGuiModuleProperties PropertiesToMove = ImGuiModuleManager->GetProperties();
@@ -328,6 +349,35 @@ void FImGuiModule::ToggleShowDemo()
 }
 
 
+void FImGuiModule::ToggleInput()
+{
+	auto& Module = FModuleManager::GetModuleChecked<FImGuiModule>("ImGui");
+	Module.GetProperties().ToggleInput();
+	FImGuiStyle::UpdateLogo(Module.GetProperties().IsInputEnabled());
+}
+
+
+
+
+void FImGuiModule::RegisterMenus()
+{
+#if ENGINE_MAJOR_VERSION == 4
+	{
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar");
+		FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("Settings");
+		FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FImGuiCommands::Get().ImGuiToggleInput));
+		Entry.SetCommandList(PluginCommands);
+	}
+#endif
+#if ENGINE_MAJOR_VERSION == 5
+	{
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
+		FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
+		FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FImGuiCommands::Get().ImGuiToggleInput));
+		Entry.SetCommandList(PluginCommands);
+	}
+#endif
+}
 //----------------------------------------------------------------------------------------------------
 // Runtime loader
 //----------------------------------------------------------------------------------------------------
