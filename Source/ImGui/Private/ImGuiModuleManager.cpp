@@ -12,6 +12,7 @@
 
 #include "IAssetViewport.h"
 #include "LevelEditor.h"
+#include "SLevelViewport.h"
 
 
 // High enough z-order guarantees that ImGui output is rendered on top of the game UI.
@@ -190,31 +191,6 @@ void FImGuiModuleManager::OnViewportCreated()
 
 void FImGuiModuleManager::AddWidgetToViewport(UGameViewportClient* GameViewport)
 {
-	if (GameViewport == nullptr) {
-		// Make sure that textures are loaded before the first Slate widget is created.
-		LoadTextures();
-
-		// Create and initialize the widget.
-		TSharedPtr<SImGuiLayout> SharedWidget;
-		SAssignNew(SharedWidget, SImGuiLayout).ModuleManager(this).GameViewport(nullptr).ContextIndex(Utilities::EDITOR_CONTEXT_INDEX);
-
-		// GameViewport->AddViewportWidgetContent(SharedWidget.ToSharedRef(), IMGUI_WIDGET_Z_ORDER);
-		FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
-		TSharedPtr<IAssetViewport> ActiveLevelViewport = LevelEditorModule.GetFirstActiveViewport();
-		ActiveLevelViewport->AddOverlayWidget(SharedWidget.ToSharedRef());
-
-		// We transfer widget ownerships to viewports but we keep weak references in case we need to manually detach active
-		// widgets during module shutdown (important during hot-reloading).
-		if (TWeakPtr<SImGuiLayout>* Slot = Widgets.FindByPredicate([](auto& Widget) { return !Widget.IsValid(); })) {
-			*Slot = SharedWidget;
-		}
-		else {
-			Widgets.Emplace(SharedWidget);
-		}
-
-		return;
-	}
-
 	checkf(GameViewport, TEXT("Null game viewport."));
 	checkf(FSlateApplication::IsInitialized(), TEXT("Slate should be initialized before we can add widget to game viewports."));
 
@@ -233,12 +209,31 @@ void FImGuiModuleManager::AddWidgetToViewport(UGameViewportClient* GameViewport)
 
 	// We transfer widget ownerships to viewports but we keep weak references in case we need to manually detach active
 	// widgets during module shutdown (important during hot-reloading).
-	if (TWeakPtr<SImGuiLayout>* Slot = Widgets.FindByPredicate([](auto& Widget) { return !Widget.IsValid(); }))
-	{
+	if (TWeakPtr<SImGuiLayout>* Slot = Widgets.FindByPredicate([](auto& Widget) { return !Widget.IsValid(); })) {
 		*Slot = SharedWidget;
 	}
-	else
-	{
+	else {
+		Widgets.Emplace(SharedWidget);
+	}
+}
+
+void FImGuiModuleManager::AddWidgetToEditorViewport(TSharedPtr<SLevelViewport> Viewport)
+{
+	// Make sure that textures are loaded before the first Slate widget is created.
+	LoadTextures();
+
+	// Create and initialize the widget.
+	TSharedPtr<SImGuiLayout> SharedWidget;
+	SAssignNew(SharedWidget, SImGuiLayout).ModuleManager(this).GameViewport(nullptr).ContextIndex(Utilities::EDITOR_CONTEXT_INDEX);
+
+	Viewport->AddOverlayWidget(SharedWidget.ToSharedRef());
+
+	// We transfer widget ownerships to viewports but we keep weak references in case we need to manually detach active
+	// widgets during module shutdown (important during hot-reloading).
+	if (TWeakPtr<SImGuiLayout>* Slot = Widgets.FindByPredicate([](auto& Widget) { return !Widget.IsValid(); })) {
+		*Slot = SharedWidget;
+	}
+	else {
 		Widgets.Emplace(SharedWidget);
 	}
 }

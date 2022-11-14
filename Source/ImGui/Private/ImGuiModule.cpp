@@ -150,33 +150,32 @@ void FImGuiModule::StartupModule()
 
 
 	FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
-	LevelEditorModule.OnRedrawLevelEditingViewports().AddRaw(this, &FImGuiModule::OnRedrawLevelEditingViewports);
+	LevelEditorModule.OnLevelEditorCreated().AddRaw(this, &FImGuiModule::OnLevelEditorCreated);
+
 
 	AddEditorImGuiDelegate(FImGuiDelegate::CreateRaw(this, &FImGuiModule::ImguiTick));
 }
 
-void FImGuiModule::OnRedrawLevelEditingViewports(bool T)
-{
-	UE_LOG(LogTemp, Warning, TEXT("OnRedrawLevelEditingViewports %d"), T);
-	InitViewportImgui();
-}
 
 
-void FImGuiModule::InitViewportImgui()
+void FImGuiModule::InitViewportImgui( TSharedPtr<SLevelViewport> Viewport)
 {
 	if (!IsEditorInit) {
-		FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
-		TSharedPtr<IAssetViewport> ActiveLevelViewport = LevelEditorModule.GetFirstActiveViewport();
-		if (ActiveLevelViewport.IsValid()) {
-			ImGuiModuleManager->GetContextManager().GetEditorContextData();
-			UE_LOG(LogTemp, Warning, TEXT("INIT VIEWPORT"));
-			ImGuiModuleManager->AddWidgetToViewport(nullptr);
-			IsEditorInit = true;
-		}
+		ImGuiModuleManager->GetContextManager().GetEditorContextData();
+		UE_LOG(LogTemp, Warning, TEXT("INIT VIEWPORT"));
+		ImGuiModuleManager->AddWidgetToEditorViewport(Viewport);
+		IsEditorInit = true;
 	}
 }
 
 // Testing.
+void FImGuiModule::OnLevelEditorCreated(TSharedPtr<ILevelEditor> LevelEditor)
+{
+	TSharedPtr<SLevelViewport> Viewport = LevelEditor->GetActiveViewportInterface();
+	UE_LOG(LogTemp, Warning, TEXT("LEVEL EDITOR CREATED %p"), Viewport.Get());
+	InitViewportImgui(Viewport);
+}
+
 void FImGuiModule::ImguiTick() {
 
 	bool Open = true;

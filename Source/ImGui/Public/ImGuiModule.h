@@ -183,9 +183,9 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	void OnRedrawLevelEditingViewports(bool T);
 	void ImguiTick();
-	void InitViewportImgui();
+	void InitViewportImgui( TSharedPtr<SLevelViewport> Viewport);
+	void OnLevelEditorCreated(TSharedPtr<ILevelEditor>);
 
 private:
 #if WITH_EDITOR

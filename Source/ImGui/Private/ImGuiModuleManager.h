@@ -22,7 +22,7 @@ public:
 	// Get interface to module settings.
 	FImGuiModuleSettings& GetSettings() { return Settings; }
 
-	// Get interface to module state properties. 
+	// Get interface to module state properties.
 	FImGuiModuleProperties& GetProperties() { return Properties; }
 
 	// Get ImGui contexts manager.
@@ -63,6 +63,7 @@ private:
 	void OnViewportCreated();
 
 	void AddWidgetToViewport(UGameViewportClient* GameViewport);
+	void AddWidgetToEditorViewport(TSharedPtr<class SLevelViewport>);
 	void AddWidgetsToActiveViewports();
 
 	void OnContextProxyCreated(int32 ContextIndex, FImGuiContextProxy& ContextProxy);
@@ -79,7 +80,7 @@ private:
 	// ImGui settings proxy (valid in every loading stage).
 	FImGuiModuleSettings Settings;
 
-	// Widget that we add to all created contexts to draw ImGui demo. 
+	// Widget that we add to all created contexts to draw ImGui demo.
 	FImGuiDemo ImGuiDemo;
 
 	// Manager for ImGui contexts.
