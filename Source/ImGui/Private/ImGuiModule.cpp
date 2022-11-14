@@ -46,6 +46,12 @@ static FImGuiEditor* ImGuiEditor = nullptr;
 #if WITH_EDITOR
 FImGuiDelegateHandle FImGuiModule::AddEditorImGuiDelegate(const FImGuiDelegate& Delegate)
 {
+	static bool IsEditorInit = false;
+	if (!IsEditorInit) {
+		ImGuiModuleManager->AddWidgetToViewport(nullptr);
+		IsEditorInit = true;
+	}
+
 	return { FImGuiDelegatesContainer::Get().OnWorldDebug(Utilities::EDITOR_CONTEXT_INDEX).Add(Delegate),
 		EDelegateCategory::Default, Utilities::EDITOR_CONTEXT_INDEX };
 }

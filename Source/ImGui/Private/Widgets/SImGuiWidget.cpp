@@ -24,6 +24,10 @@
 
 #include <utility>
 
+#include "ImGuiWidgetEd.h"
+#include "LevelEditor.h"
+#include "IAssetViewport.h"
+
 
 #if IMGUI_WIDGET_DEBUG
 
@@ -83,7 +87,7 @@ BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SImGuiWidget::Construct(const FArguments& InArgs)
 {
 	checkf(InArgs._ModuleManager, TEXT("Null Module Manager argument"));
-	checkf(InArgs._GameViewport, TEXT("Null Game Viewport argument"));
+	// checkf(InArgs._GameViewport, TEXT("Null Game Viewport argument"));
 
 	ModuleManager = InArgs._ModuleManager;
 	GameViewport = InArgs._GameViewport;
@@ -223,7 +227,7 @@ FReply SImGuiWidget::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEv
 
 	IMGUI_WIDGET_LOG(VeryVerbose, TEXT("ImGui Widget %d - Focus Received."), ContextIndex);
 
-	bForegroundWindow = GameViewport->Viewport->IsForegroundWindow();
+	bForegroundWindow = GetViewport()->IsForegroundWindow();
 	InputHandler->OnKeyboardInputEnabled();
 	InputHandler->OnGamepadInputEnabled();
 
@@ -281,7 +285,12 @@ void SImGuiWidget::CreateInputHandler(const FSoftClassPath& HandlerClassReferenc
 
 	if (!InputHandler.IsValid())
 	{
-		InputHandler = FImGuiInputHandlerFactory::NewHandler(HandlerClassReference, ModuleManager, GameViewport.Get(), ContextIndex);
+		if (GameViewport.IsValid()) {
+			InputHandler = FImGuiInputHandlerFactory::NewHandlerWorld(HandlerClassReference, ModuleManager, GameViewport.Get(), ContextIndex);
+		}
+		else {
+			InputHandler = FImGuiInputHandlerFactory::NewHandlerEditor(SImGuiWidgetEd::GetInputHandlerOuterPkg(), HandlerClassReference, ModuleManager, ContextIndex);
+		}
 	}
 }
 
@@ -337,7 +346,7 @@ void SImGuiWidget::SetHideMouseCursor(bool bHide)
 
 bool SImGuiWidget::IsConsoleOpened() const
 {
-	return GameViewport->ViewportConsole && GameViewport->ViewportConsole->ConsoleState != NAME_None;
+	return GameViewport.IsValid() ? GameViewport->ViewportConsole && GameViewport->ViewportConsole->ConsoleState != NAME_None : true;
 }
 
 void SImGuiWidget::UpdateVisibility()
@@ -385,25 +394,22 @@ void SImGuiWidget::TakeFocus()
 
 	PreviousUserFocusedWidget = SlateApplication.GetUserFocusedWidget(SlateApplication.GetUserIndexForKeyboard());
 
-	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
-	{
+	if (ULocalPlayer* LocalPlayer = GetLocalPlayer()) {
 		TSharedRef<SWidget> FocusWidget = SharedThis(this);
 		LocalPlayer->GetSlateOperations().CaptureMouse(FocusWidget);
 		LocalPlayer->GetSlateOperations().SetUserFocus(FocusWidget);
 	}
-	else
-	{
+	else {
 		SlateApplication.SetKeyboardFocus(SharedThis(this));
 	}
 }
 
 void SImGuiWidget::ReturnFocus()
 {
-	if (HasKeyboardFocus())
-	{
+	if (HasKeyboardFocus()) {
 		auto FocusWidgetPtr = PreviousUserFocusedWidget.IsValid()
 			? PreviousUserFocusedWidget.Pin()
-			: GameViewport->GetGameViewportWidget();
+			: ((TWeakPtr<SWidget>)GetViewportWidget()).Pin();
 
 		if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
 		{
@@ -426,6 +432,7 @@ void SImGuiWidget::UpdateInputState()
 {
 	auto& Properties = ModuleManager->GetProperties();
 	auto* ContextProxy = ModuleManager->GetContextManager().GetContextProxy(ContextIndex);
+	auto* ViewportWidget = GetViewportWidget().Pin().Get();
 
 	const bool bEnableTransparentMouseInput = Properties.IsMouseInputShared()
 #if PLATFORM_ANDROID || PLATFORM_IOS
@@ -452,42 +459,33 @@ void SImGuiWidget::UpdateInputState()
 		UpdateVisibility();
 		UpdateMouseCursor();
 
-		if (bInputEnabled)
-		{
+		if (bInputEnabled) {
 			// We won't get mouse enter, if viewport is already hovered.
-			if (GameViewport->GetGameViewportWidget()->IsHovered())
-			{
+			if (ViewportWidget->IsHovered()) {
 				InputHandler->OnMouseInputEnabled();
 			}
 
 			TakeFocus();
 		}
-		else
-		{
+		else {
 			ReturnFocus();
 		}
 	}
-	else if(bInputEnabled)
-	{
-		const auto& ViewportWidget = GameViewport->GetGameViewportWidget();
-
-		if (bTransparentMouseInput)
-		{
+	else if(bInputEnabled){
+		if (bTransparentMouseInput) {
 			// If mouse is in transparent input mode and focus is lost to viewport, let viewport keep it and disable
 			// the whole input to match that state.
-			if (GameViewport->GetGameViewportWidget()->HasMouseCapture())
+			if (ViewportWidget->HasMouseCapture())
 			{
 				// DON'T DISABLE OUR INPUT WHEN WE LOSE FOCUS
 				//Properties.SetInputEnabled(false);
 				//UpdateInputState();
 			}
 		}
-		else
-		{
+		else {
 			// Widget tends to lose keyboard focus after console is opened. With non-transparent mouse we can fix that
 			// by manually restoring it.
-			if (!HasKeyboardFocus() && !IsConsoleOpened() && (ViewportWidget->HasKeyboardFocus() || ViewportWidget->HasFocusedDescendants()))
-			{
+			if (!HasKeyboardFocus() && !IsConsoleOpened() && (ViewportWidget->HasKeyboardFocus() || ViewportWidget->HasFocusedDescendants())) {
 				TakeFocus();
 			}
 		}
@@ -498,7 +496,7 @@ void SImGuiWidget::UpdateTransparentMouseInput(const FGeometry& AllottedGeometry
 {
 	if (bInputEnabled && bTransparentMouseInput)
 	{
-		if (!GameViewport->GetGameViewportWidget()->HasMouseCapture())
+		if (GetViewportWidget().Pin().Get()->HasMouseCapture())
 		{
 			InputHandler->OnMouseMove(TransformScreenPointToImGui(AllottedGeometry, FSlateApplication::Get().GetCursorPos()));
 		}
@@ -511,7 +509,7 @@ void SImGuiWidget::HandleWindowFocusLost()
 	// we get mouse leave or enter events, but they are only sent if mouse pointer is inside of the viewport.
 	if (bInputEnabled && HasKeyboardFocus())
 	{
-		if (bForegroundWindow != GameViewport->Viewport->IsForegroundWindow())
+		if (bForegroundWindow != GetViewport()->IsForegroundWindow())
 		{
 			bForegroundWindow = !bForegroundWindow;
 
@@ -693,6 +691,35 @@ FVector2D SImGuiWidget::ComputeDesiredSize(float Scale) const
 	return CanvasSize * Scale;
 }
 
+TWeakPtr<SViewport> SImGuiWidget::GetViewportWidget()
+{
+	TWeakPtr<SViewport> ViewportWidget;
+	if (GameViewport.IsValid()) {
+		return GameViewport->GetGameViewportWidget();
+	}
+	else {
+		FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
+		TSharedPtr<IAssetViewport> ActiveLevelViewport = LevelEditorModule.GetFirstActiveViewport();
+		return ActiveLevelViewport->GetViewportWidget();
+	}
+}
+
+FViewport const* SImGuiWidget::GetViewport()
+{
+	FViewport const * Viewport = nullptr;
+	if (GameViewport.IsValid()) {
+		Viewport = GameViewport->Viewport;
+	}
+	else {
+		FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
+		TSharedPtr<IAssetViewport> ActiveLevelViewport = LevelEditorModule.GetFirstActiveViewport();
+		Viewport = ActiveLevelViewport->GetActiveViewport();
+	}
+
+	return Viewport;
+}
+
+
 #if IMGUI_WIDGET_DEBUG
 
 static TArray<FKey> GetImGuiMappedKeys()
@@ -854,7 +881,7 @@ void SImGuiWidget::OnDebugDraw()
 			{
 				TwoColumns::Value("Context Index", ContextIndex);
 				TwoColumns::Value("Context Name", ContextProxy ? *ContextProxy->GetName() : TEXT("< Null >"));
-				TwoColumns::Value("Game Viewport", *GameViewport->GetName());
+				// TwoColumns::Value("Game Viewport", *GameViewport->GetName());
 			});
 
 			TwoColumns::CollapsingGroup("Canvas Size", [&]()
@@ -886,15 +913,17 @@ void SImGuiWidget::OnDebugDraw()
 
 			TwoColumns::CollapsingGroup("Viewport", [&]()
 			{
-				const auto& ViewportWidget = GameViewport->GetGameViewportWidget();
-				TwoColumns::Value("Is Foreground Window", GameViewport->Viewport->IsForegroundWindow());
-				TwoColumns::Value("Is Hovered", ViewportWidget->IsHovered());
-				TwoColumns::Value("Is Directly Hovered", ViewportWidget->IsDirectlyHovered());
-				TwoColumns::Value("Has Mouse Capture", ViewportWidget->HasMouseCapture());
-				TwoColumns::Value("Has Keyboard Input", ViewportWidget->HasKeyboardFocus());
-				TwoColumns::Value("Has Focused Descendants", ViewportWidget->HasFocusedDescendants());
-				auto Widget = PreviousUserFocusedWidget.Pin();
-				TwoColumns::Value("Previous User Focused", Widget.IsValid() ? *Widget->GetTypeAsString() : TEXT("None"));
+				if (GameViewport.IsValid()) {
+					const auto& ViewportWidget = GameViewport->GetGameViewportWidget();
+					TwoColumns::Value("Is Foreground Window", GameViewport->Viewport->IsForegroundWindow());
+					TwoColumns::Value("Is Hovered", ViewportWidget->IsHovered());
+					TwoColumns::Value("Is Directly Hovered", ViewportWidget->IsDirectlyHovered());
+					TwoColumns::Value("Has Mouse Capture", ViewportWidget->HasMouseCapture());
+					TwoColumns::Value("Has Keyboard Input", ViewportWidget->HasKeyboardFocus());
+					TwoColumns::Value("Has Focused Descendants", ViewportWidget->HasFocusedDescendants());
+					auto Widget = PreviousUserFocusedWidget.Pin();
+					TwoColumns::Value("Previous User Focused", Widget.IsValid() ? *Widget->GetTypeAsString() : TEXT("None"));
+				}
 			});
 		}
 		ImGui::End();
@@ -1001,6 +1030,7 @@ void SImGuiWidget::OnDebugDraw()
 		ImGui::End();
 	}
 }
+
 
 #undef TEXT_INPUT_MODE
 #undef TEXT_BOOL

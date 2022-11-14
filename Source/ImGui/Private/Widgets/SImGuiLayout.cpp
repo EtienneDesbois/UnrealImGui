@@ -15,7 +15,7 @@
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
 void SImGuiLayout::Construct(const FArguments& InArgs)
 {
-	checkf(InArgs._GameViewport, TEXT("Null Game Viewport argument"));
+	// checkf(InArgs._GameViewport, TEXT("Null Game Viewport argument"));
 
 	ModuleManager = InArgs._ModuleManager;
 	GameViewport = InArgs._GameViewport;
@@ -32,7 +32,7 @@ void SImGuiLayout::Construct(const FArguments& InArgs)
 
 	ChildSlot
 	[
-		// Remove accumulated scale to manually control how we draw data. 
+		// Remove accumulated scale to manually control how we draw data.
 		SNew(SScaleBox)
 		.IgnoreInheritedScale(true)
 		.HAlign(HAlign_Fill)

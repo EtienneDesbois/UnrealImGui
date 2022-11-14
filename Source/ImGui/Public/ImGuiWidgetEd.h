@@ -54,12 +54,14 @@ public:
 
 	~SImGuiWidgetEd();
 
+
+	static UPackage* GetInputHandlerOuterPkg();
+
 private:
 
 	void CreateInputHandler(const FSoftClassPath& HandlerClassReference);
 	void ReleaseInputHandler();
 
-    UPackage* GetInputHandlerOuterPkg();
 
 	void UpdateInputState();
 	void OnPostImGuiUpdate();

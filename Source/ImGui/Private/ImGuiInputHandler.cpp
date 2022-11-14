@@ -130,16 +130,14 @@ FReply UImGuiInputHandler::OnMouseButtonDown(const FPointerEvent& MouseEvent)
 	}
 
 	InputState->SetMouseDown(MouseEvent, true);
-	if (ModuleManager)
-	{
-		FImGuiContextProxy* Proxy = ModuleManager->GetContextManager().GetContextProxy(0);
-		if (Proxy)
-		{
+	if (ModuleManager) {
+		FImGuiContextProxy* Proxy = ModuleManager->GetContextManager().GetContextProxy(ContextIndex);
+		if (Proxy) {
 			GEngine->AddOnScreenDebugMessage(15, 10, Proxy->WantsMouseCapture() ? FColor::Green : FColor::Red, TEXT("Handler Down"));
 			return ToReply(Proxy->WantsMouseCapture());
 		}
 	}
-	return ToReply(true);
+	return ToReply(false);
 }
 
 FReply UImGuiInputHandler::OnMouseButtonDoubleClick(const FPointerEvent& MouseEvent)
@@ -162,7 +160,15 @@ FReply UImGuiInputHandler::OnMouseButtonUp(const FPointerEvent& MouseEvent)
 FReply UImGuiInputHandler::OnMouseWheel(const FPointerEvent& MouseEvent)
 {
 	InputState->AddMouseWheelDelta(MouseEvent.GetWheelDelta());
-	return ToReply(true);
+
+	if (ModuleManager) {
+		FImGuiContextProxy* Proxy = ModuleManager->GetContextManager().GetContextProxy(ContextIndex);
+		if (Proxy) {
+			return ToReply(Proxy->WantsMouseCapture());
+		}
+	}
+
+	return ToReply(false);
 }
 
 FReply UImGuiInputHandler::OnMouseMove(const FVector2D& MousePosition, const FPointerEvent& MouseEvent)

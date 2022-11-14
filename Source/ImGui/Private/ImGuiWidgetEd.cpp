@@ -46,7 +46,7 @@ void SImGuiWidgetEd::CreateInputHandler(const FSoftClassPath& HandlerClassRefere
 
 	if (!InputHandler.IsValid())
 	{
-		InputHandler = FImGuiInputHandlerFactory::NewHandler(GetInputHandlerOuterPkg(), HandlerClassReference, ModuleManager, ContextIndex_UnOffset);
+		InputHandler = FImGuiInputHandlerFactory::NewHandlerEditorWindow(GetInputHandlerOuterPkg(), HandlerClassReference, ModuleManager, ContextIndex_UnOffset);
 	}
 
 }
