@@ -237,12 +237,14 @@ FReply SImGuiWidget::OnFocusReceived(const FGeometry& MyGeometry, const FFocusEv
 
 void SImGuiWidget::OnFocusLost(const FFocusEvent& FocusEvent)
 {
-	Super::OnFocusLost(FocusEvent);
+	// if (InputHandler->WantsMouseCapture()) {
+	{
+		Super::OnFocusLost(FocusEvent);
+		IMGUI_WIDGET_LOG(VeryVerbose, TEXT("ImGui Widget %d - Focus Lost."), ContextIndex);
 
-	IMGUI_WIDGET_LOG(VeryVerbose, TEXT("ImGui Widget %d - Focus Lost."), ContextIndex);
-
-	InputHandler->OnKeyboardInputDisabled();
-	InputHandler->OnGamepadInputDisabled();
+		InputHandler->OnKeyboardInputDisabled();
+		InputHandler->OnGamepadInputDisabled();
+	}
 }
 
 void SImGuiWidget::OnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
@@ -478,15 +480,15 @@ void SImGuiWidget::UpdateInputState()
 			if (ViewportWidget->HasMouseCapture())
 			{
 				// DON'T DISABLE OUR INPUT WHEN WE LOSE FOCUS
-				//Properties.SetInputEnabled(false);
-				//UpdateInputState();
+				// Properties.SetInputEnabled(false);
+				// UpdateInputState();
 			}
 		}
 		else {
 			// Widget tends to lose keyboard focus after console is opened. With non-transparent mouse we can fix that
 			// by manually restoring it.
 			if (!HasKeyboardFocus() && !IsConsoleOpened() && (ViewportWidget->HasKeyboardFocus() || ViewportWidget->HasFocusedDescendants())) {
-				TakeFocus();
+				// TakeFocus();
 			}
 		}
 	}

@@ -132,6 +132,8 @@ public:
 	/** Called to handle deactivation of the mouse input. */
 	virtual void OnMouseInputDisabled();
 
+	bool WantsMouseCapture() const;
+
 protected:
 
 	/** Copy state of modifier keys to input state. */
