@@ -198,7 +198,7 @@ void FImGuiModule::OnLevelEditorCreated(TSharedPtr<ILevelEditor> LevelEditor)
 void FImGuiModule::ImguiTick() {
 
 	bool Open = true;
-	ImGui::GetIO().FontGlobalScale = 1.5f;
+	// ImGui::GetIO().FontGlobalScale = 1.5f;
 	ImGui::Begin("Label", &Open, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar);
 	// ImGui::SliderFloat("Scale", &Scale, 0.1f, 5.0f);
 	// ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
