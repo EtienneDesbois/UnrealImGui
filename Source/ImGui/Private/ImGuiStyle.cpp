@@ -7,9 +7,6 @@
 #include "Interfaces/IPluginManager.h"
 
 TSharedPtr< FSlateStyleSet > FImGuiStyle::StyleInstance = NULL;
-FSlateImageBrush * FImGuiStyle::LogoDisabled = nullptr;
-FSlateImageBrush * FImGuiStyle::LogoEnabled = nullptr;
-
 
 void FImGuiStyle::Initialize()
 {
@@ -49,10 +46,10 @@ void FImGuiStyle::UpdateLogo(bool const IsInputEnabled)
 {
 	auto Style = StyleInstance.Get();
 	if (IsInputEnabled) {
-		StyleInstance->Set("ImGui.ImGuiToggleInput", LogoEnabled);
+		StyleInstance->Set("ImGui.ImGuiToggleInput", new IMAGE_BRUSH(TEXT("ImGuiLogoInputEnabled"), Icon40x40));
 	}
 	else {
-		StyleInstance->Set("ImGui.ImGuiToggleInput", LogoDisabled);
+		StyleInstance->Set("ImGui.ImGuiToggleInput", new IMAGE_BRUSH(TEXT("ImGuiLogoInputDisabled"), Icon40x40));
 	}
 }
 
@@ -61,12 +58,9 @@ TSharedRef< FSlateStyleSet > FImGuiStyle::Create()
 	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("ImGuiStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("ImGui")->GetBaseDir() / TEXT("Resources"));
 
-	LogoDisabled = new IMAGE_BRUSH(TEXT("ImGuiLogoInputDisabled"), Icon40x40);
-	LogoEnabled  = new IMAGE_BRUSH(TEXT("ImGuiLogoInputEnabled"), Icon40x40);
-	Style->Set("ImGui.ImGuiToggleInput", LogoEnabled);
-	// Keep logos alive.
-	Style->Set("ImGui.ImGuiInputDisabled", LogoDisabled);
-	Style->Set("ImGui.ImGuiInputEnabled", LogoEnabled);
+	// Register logos before using it.
+	Style->Set("ImGui.ImGuiInputDisabled", new IMAGE_BRUSH(TEXT("ImGuiLogoInputDisabled"), Icon40x40));
+	Style->Set("ImGui.ImGuiInputEnabled", new IMAGE_BRUSH(TEXT("ImGuiLogoInputEnabled"), Icon40x40));
 	return Style;
 }
 

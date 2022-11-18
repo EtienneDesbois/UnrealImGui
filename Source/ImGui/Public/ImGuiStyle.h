@@ -29,7 +29,5 @@ private:
 	static TSharedRef< class FSlateStyleSet > Create();
 
 private:
-	static FSlateImageBrush * LogoDisabled;
-	static FSlateImageBrush * LogoEnabled;
 	static TSharedPtr< class FSlateStyleSet > StyleInstance;
 };

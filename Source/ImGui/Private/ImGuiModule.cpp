@@ -142,6 +142,7 @@ void FImGuiModule::StartupModule()
 	FImGuiStyle::ReloadTextures();
 	FImGuiCommands::Register();
 
+
 #if WITH_EDITOR
 	ImGuiContextHandle = &ImGuiImplementation::GetContextHandle();
 	DelegatesContainerHandle = &FImGuiDelegatesContainer::GetHandle();
@@ -151,6 +152,8 @@ void FImGuiModule::StartupModule()
 
 	checkf(!ImGuiModuleManager, TEXT("Instance of the ImGui Module Manager already exists. Instance should be created only during module startup."));
 	ImGuiModuleManager = new FImGuiModuleManager();
+
+	FImGuiStyle::UpdateLogo(GetProperties().IsInputEnabled());
 
 #if WITH_EDITOR
 	checkf(!ImGuiEditor, TEXT("Instance of the ImGui Editor already exists. Instance should be created only during module startup."));
