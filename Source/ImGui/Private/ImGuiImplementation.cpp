@@ -7,11 +7,13 @@
 // For convenience and easy access to the ImGui source code, we build it as part of this module.
 // We don't need to define IMGUI_API manually because it is already done for this module.
 
+#if ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 0
 #if PLATFORM_XBOXONE
 // Disable Win32 functions used in ImGui and not supported on XBox.
 #define IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS
 #define IMGUI_DISABLE_WIN32_DEFAULT_IME_FUNCTIONS
 #endif // PLATFORM_XBOXONE
+#endif // ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION == 0
 
 #if PLATFORM_WINDOWS
 #include <Windows/AllowWindowsPlatformTypes.h>
