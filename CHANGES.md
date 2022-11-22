@@ -1,9 +1,16 @@
 This is only a summary provided to give a quick overview of changes. It does not list details which can be found in commit messages. If you think that more detailed changelog would be beneficiary, please raise it as an issue.
 
-Versions marked as 'unofficial' are labelled only for the needs of this changelog. Officially I maintain version numbers since 2019/04, starting from version 1.14. If you have any of the earlier commits then you will see plugin signed as a version 1.0.
-
 Change History
 --------------
+
+Version: 1.23 (2022/11/22)
+- Add compatibility with Unreal 5.0 and 5.1
+- Add BP interface for ImGui
+- Add Slate window ImGui backend
+- Add Editor Viewport backend
+- Add button in toolbar and shortcut to toggle input mode
+- Switch default font to Roboto from unreal sources
+- Fix input system in simulate
 
 Version: 1.22 (2021/04)
 - Fixed potential for initialization fiasco when using delegates container.
