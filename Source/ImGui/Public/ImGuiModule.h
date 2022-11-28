@@ -188,7 +188,8 @@ public:
 	void ImguiTick();
 	void InitViewportImgui( TSharedPtr<SLevelViewport> Viewport);
 	void OnLevelEditorCreated(TSharedPtr<ILevelEditor>);
-
+	void OnRedrawLevelEditingViewports(bool T);
+	
 	static void ToggleInput();
 	void RegisterMenus();
 private:

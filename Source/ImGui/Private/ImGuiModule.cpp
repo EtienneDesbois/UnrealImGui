@@ -162,8 +162,9 @@ void FImGuiModule::StartupModule()
 
 
 	FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
-	LevelEditorModule.OnLevelEditorCreated().AddRaw(this, &FImGuiModule::OnLevelEditorCreated);
-
+	// LevelEditorModule.OnLevelEditorCreated().AddRaw(this, &FImGuiModule::OnLevelEditorCreated);
+	LevelEditorModule.OnRedrawLevelEditingViewports().AddRaw(this, &FImGuiModule::OnRedrawLevelEditingViewports);
+	
 	PluginCommands = MakeShareable(new FUICommandList);
 
 	PluginCommands->MapAction(
@@ -180,7 +181,7 @@ void FImGuiModule::StartupModule()
 
 
 
-void FImGuiModule::InitViewportImgui( TSharedPtr<SLevelViewport> Viewport)
+void FImGuiModule::InitViewportImgui(TSharedPtr<SLevelViewport> Viewport)
 {
 	if (!IsEditorInit) {
 		ImGuiModuleManager->GetContextManager().GetEditorContextData();
@@ -190,12 +191,30 @@ void FImGuiModule::InitViewportImgui( TSharedPtr<SLevelViewport> Viewport)
 	}
 }
 
-// Testing.
+void FImGuiModule::OnRedrawLevelEditingViewports(bool T)
+{
+	if (!IsEditorInit) {
+		UE_LOG(LogTemp, Warning, TEXT("OnRedrawLevelEditingViewports %d"), T);
+		FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
+		TWeakPtr<class ILevelEditor> LevelEditor = LevelEditorModule.GetLevelEditorInstance();
+		if (LevelEditor.IsValid()) {
+			TSharedPtr<SLevelViewport> Viewport = LevelEditor.Pin()->GetActiveViewportInterface();
+			if (Viewport) {	
+				InitViewportImgui(Viewport);
+			}
+		}
+	}
+}
+
 void FImGuiModule::OnLevelEditorCreated(TSharedPtr<ILevelEditor> LevelEditor)
 {
-	TSharedPtr<SLevelViewport> Viewport = LevelEditor->GetActiveViewportInterface();
-	UE_LOG(LogTemp, Warning, TEXT("LEVEL EDITOR CREATED %p"), Viewport.Get());
-	InitViewportImgui(Viewport);
+	if (!IsEditorInit) {
+		TSharedPtr<SLevelViewport> Viewport = LevelEditor->GetActiveViewportInterface();
+		UE_LOG(LogTemp, Warning, TEXT("LEVEL EDITOR CREATED %p"), Viewport.Get());
+		if (Viewport) {	
+			InitViewportImgui(Viewport);
+		}
+	}
 }
 
 void FImGuiModule::ImguiTick() {
