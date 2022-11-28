@@ -194,7 +194,6 @@ void FImGuiModule::InitViewportImgui(TSharedPtr<SLevelViewport> Viewport)
 void FImGuiModule::OnRedrawLevelEditingViewports(bool T)
 {
 	if (!IsEditorInit) {
-		UE_LOG(LogTemp, Warning, TEXT("OnRedrawLevelEditingViewports %d"), T);
 		FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>( TEXT("LevelEditor") );
 		TWeakPtr<class ILevelEditor> LevelEditor = LevelEditorModule.GetLevelEditorInstance();
 		if (LevelEditor.IsValid()) {

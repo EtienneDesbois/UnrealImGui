@@ -3,6 +3,10 @@ This is only a summary provided to give a quick overview of changes. It does not
 Change History
 --------------
 
+Version: 1.23.1 (2022/11/28)
+- Disable input at startup to keep control on unreal buttons
+- Fix crash when opening editor without a viewport
+
 Version: 1.23 (2022/11/22)
 - Add compatibility with Unreal 5.0 and 5.1
 - Add BP interface for ImGui
