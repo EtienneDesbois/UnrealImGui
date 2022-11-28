@@ -90,8 +90,8 @@ public:
 
 private:
 
-	bool bInputEnabled = true;
-	bool bInputEnabledInEditor = true;
+	bool bInputEnabled = false;
+	bool bInputEnabledInEditor = false;
 
 	bool bKeyboardNavigationEnabled = false;
 	bool bGamepadNavigationEnabled = false;

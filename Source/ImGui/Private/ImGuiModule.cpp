@@ -174,7 +174,7 @@ void FImGuiModule::StartupModule()
 	IMainFrameModule& mainFrame = FModuleManager::Get().LoadModuleChecked<IMainFrameModule>("MainFrame");
 	mainFrame.GetMainFrameCommandBindings()->Append(PluginCommands.ToSharedRef());
 
-	AddEditorImGuiDelegate(FImGuiDelegate::CreateRaw(this, &FImGuiModule::ImguiTick));
+	// AddEditorImGuiDelegate(FImGuiDelegate::CreateRaw(this, &FImGuiModule::ImguiTick));
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FImGuiModule::RegisterMenus));
 }
 
