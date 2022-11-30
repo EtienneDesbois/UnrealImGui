@@ -40,6 +40,9 @@ FReply UImGuiInputHandler::OnKeyChar(const struct FCharacterEvent& CharacterEven
 
 FReply UImGuiInputHandler::OnKeyDown(const FKeyEvent& KeyEvent)
 {
+	if (KeyEvent.GetKey() == EKeys::F8) {
+		return ToReply(false);
+	}
 	if (KeyEvent.GetKey().IsGamepadKey())
 	{
 		bool bConsume = false;

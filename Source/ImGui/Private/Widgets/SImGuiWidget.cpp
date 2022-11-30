@@ -348,7 +348,7 @@ void SImGuiWidget::SetHideMouseCursor(bool bHide)
 
 bool SImGuiWidget::IsConsoleOpened() const
 {
-	return GameViewport.IsValid() ? GameViewport->ViewportConsole && GameViewport->ViewportConsole->ConsoleState != NAME_None : true;
+	return GameViewport.IsValid() ? GameViewport->ViewportConsole && GameViewport->ViewportConsole->ConsoleState != NAME_None : false;
 }
 
 void SImGuiWidget::UpdateVisibility()
