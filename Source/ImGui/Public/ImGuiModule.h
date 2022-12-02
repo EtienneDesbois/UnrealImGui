@@ -191,6 +191,8 @@ public:
 	void OnRedrawLevelEditingViewports(bool T);
 	
 	static void ToggleInput();
+	static void UpdateStyle();
+	
 	void RegisterMenus();
 private:
 #if WITH_EDITOR

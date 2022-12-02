@@ -187,6 +187,7 @@ void FImGuiModule::InitViewportImgui(TSharedPtr<SLevelViewport> Viewport)
 		ImGuiModuleManager->GetContextManager().GetEditorContextData();
 		UE_LOG(LogTemp, Warning, TEXT("INIT VIEWPORT"));
 		ImGuiModuleManager->AddWidgetToEditorViewport(Viewport);
+		UpdateStyle();
 		IsEditorInit = true;
 	}
 }
@@ -227,7 +228,7 @@ void FImGuiModule::ImguiTick() {
 	if (ImGui::Button("ITS AB TUUON")) {
 		UE_LOG(LogTemp, Warning, TEXT("CLICKED"));
 	}
-
+	
 	static float bar_data[11] {0.0,1.0,2.0,3.0,0.0,5.0,4.0,7.0,0.0,6.0,4.0};
 
 	static float count = 0;
@@ -374,7 +375,26 @@ void FImGuiModule::ToggleInput()
 {
 	auto& Module = FModuleManager::GetModuleChecked<FImGuiModule>("ImGui");
 	Module.GetProperties().ToggleInput();
-	FImGuiStyle::UpdateLogo(Module.GetProperties().IsInputEnabled());
+	bool IsEnabled = Module.GetProperties().IsInputEnabled();
+	FImGuiStyle::UpdateLogo(IsEnabled);
+	UpdateStyle();
+}
+void FImGuiModule::UpdateStyle()
+{
+	auto& Module = FModuleManager::GetModuleChecked<FImGuiModule>("ImGui");
+	bool IsEnabled = Module.GetProperties().IsInputEnabled();
+
+	if (!IsEnabled)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.30f, 0.30f, 0.30f, 0.40f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.20f, 0.20f, 0.20f, 0.54f)); 
+	}
+	else
+	{
+		// Default dark style
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.26f, 0.59f, 0.98f, 0.40f));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.16f, 0.29f, 0.48f, 0.54f)); 
+	}
 }
 
 
