@@ -3,6 +3,11 @@ This is only a summary provided to give a quick overview of changes. It does not
 Change History
 --------------
 
+Version: 1.24 (2022/12/05)
+- Encapsulate ImGuiCombo in an unreal class to avoid FString to char* conversions
+- Grey out buttons when input is disabled
+- Fix keyboard input in editor viewport
+
 Version: 1.23.1 (2022/11/28)
 - Disable input at startup to keep control on unreal buttons
 - Fix crash when opening editor without a viewport
